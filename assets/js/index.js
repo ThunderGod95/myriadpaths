@@ -2,7 +2,7 @@ const CONFIG = {
     itemsPerLoad: 50,
     storageKeys: {
         settings: "reader-settings",
-        lastRead: "nmtci-last-read",
+        lastRead: "myriad-paths-last-read",
         pwaDismissed: "pwa-install-dismissed",
     },
     themes: {

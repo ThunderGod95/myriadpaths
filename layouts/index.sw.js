@@ -43,7 +43,7 @@ const ASSETS = [
     '{{- $floatingCore.RelPermalink -}}',
     '{{- $floatingDom.RelPermalink -}}',
 
-    '{{- "img/nmtci.jpg" | relURL -}}',
+    '{{- "img/cover.webp" | relURL -}}',
     '{{- "icons/favicon-96x96.png" | relURL -}}',
     '{{- "icons/favicon.svg" | relURL -}}'
 ];

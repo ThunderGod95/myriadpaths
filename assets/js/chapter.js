@@ -437,7 +437,7 @@ const HistoryManager = {
             timestamp: Date.now(),
         };
 
-        localStorage.setItem("nmtci-last-read", JSON.stringify(history));
+        localStorage.setItem("myriad-paths-last-read", JSON.stringify(history));
     },
 };
 
