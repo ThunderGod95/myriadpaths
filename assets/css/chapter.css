@@ -1,0 +1,419 @@
+body {
+    touch-action: pan-y;
+}
+
+#content {
+    max-width: 800px;
+    font-family: var(--font-family);
+    font-size: var(--text-size);
+    line-height: var(--line-height);
+    letter-spacing: var(--letter-spacing);
+    margin: 0 auto;
+    padding: 40px 20px;
+    padding-top: 0;
+    content-visibility: auto;
+    contain-intrinsic-size: 1000px;
+    transition: all 0.05s ease-in-out;
+}
+
+#content p {
+    text-indent: var(--para-indent);
+    margin-bottom: 1em;
+    margin-top: 0;
+}
+
+#content a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    font-weight: 600;
+    padding: 2px 4px;
+    margin: 0 -4px;
+    border-radius: 4px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s,
+        color 0.2s;
+}
+
+#content a:hover {
+    background-color: var(--hover-bg);
+    border-bottom-color: var(--text-color);
+    border-radius: 4px;
+    color: var(--text-color);
+}
+
+#content hr {
+    border: 0;
+    height: 2px;
+    background-image: linear-gradient(
+        to right,
+        transparent,
+        var(--border-color),
+        transparent
+    );
+    margin: 3em auto;
+    width: 60%;
+    opacity: 0.8;
+}
+
+.active-reading {
+    background-color: var(--hover-bg);
+    border-left: 4px solid var(--accent-color);
+    padding-left: 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+#progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    z-index: 2000;
+}
+
+#progress-bar {
+    height: 100%;
+    background: var(--accent-color);
+    width: 0%;
+    transition: width 0.1s;
+    opacity: 0.8;
+}
+
+.chapter-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+    user-select: none;
+}
+
+.sticky-bar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    width: 100%;
+    background-color: var(--bg-color);
+    padding: 15px 0;
+    border-bottom: 1px solid transparent;
+    transition:
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.sticky-bar.stuck,
+.chapter-nav.sticky-top.stuck {
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -4px var(--shadow-color);
+}
+
+.bottom-nav {
+    padding-top: 20px;
+    padding-bottom: 60px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    background-color: transparent;
+    min-width: 120px;
+    cursor: pointer;
+}
+
+.nav-link:not(.disabled):hover {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    border-color: var(--text-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.nav-link:active {
+    transform: scale(0.95);
+}
+
+.nav-link.disabled {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+#sentinel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1px;
+    width: 100%;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.page-footer {
+    text-align: center;
+    padding: 0 20px 60px;
+    margin-top: -30px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-family: "Open Sans", sans-serif;
+}
+
+.discord-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 16px;
+    margin: 20px auto;
+    background-color: #5865f2;
+    color: #ffffff !important;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1;
+    border: 1px solid #5865f2;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.discord-btn:hover {
+    background-color: #4752c4;
+    border-color: #4752c4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px var(--shadow-color);
+}
+
+.discord-btn:active {
+    transform: scale(0.96);
+}
+
+[data-theme="sepia"] .discord-btn {
+    filter: sepia(0.15);
+}
+
+.audio-toolbar-wrapper {
+    max-width: 800px;
+    margin: 20px auto 30px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 5;
+}
+
+.audio-toolbar-wrapper.floating {
+    position: fixed;
+    top: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 950;
+    margin: 0;
+    width: auto;
+    border-radius: 50px;
+    animation: slideInFade 0.3s ease-out;
+}
+
+.audio-toolbar {
+    display: flex;
+    align-items: center;
+    background: var(--menu-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    padding: 6px 8px;
+    width: fit-content;
+    box-shadow: 0 2px 10px var(--shadow-color);
+    transition: all 0.3s ease;
+}
+
+.audio-toolbar:hover {
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transform: translateY(-1px);
+}
+
+.audio-main-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 8px 12px;
+    border-radius: 40px;
+    color: var(--text-color);
+    font-family: "Open Sans", serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+
+.audio-main-btn:hover {
+    background: var(--hover-bg);
+}
+
+.audio-main-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--accent-color);
+}
+
+.audio-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
+    margin: 0 4px;
+}
+
+.audio-settings-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    opacity: 0.7;
+}
+
+.audio-settings-btn:hover {
+    background: var(--hover-bg);
+    opacity: 1;
+}
+
+.audio-settings-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.audio-menu {
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    margin-top: 10px;
+    background: var(--menu-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 16px;
+    width: 300px;
+    box-shadow: 0 10px 40px var(--shadow-color);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 100;
+}
+
+.audio-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.audio-toolbar-wrapper.floating .audio-menu {
+    top: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.special-announcement {
+    margin: 2.5em 0;
+    padding: 0 1em;
+    font-weight: 700;
+    font-style: italic;
+}
+
+.rustic-frame {
+    font-family: "Fira Mono", monospace;
+    font-size: 0.8em;
+    background-color: var(--menu-bg);
+    color: var(--text-color);
+    border: 8px ridge var(--border-color);
+    outline: 2px dashed var(--border-color);
+    outline-offset: -12px;
+    padding: 32px;
+    margin: 1.5em auto;
+    max-width: var(--content-width);
+    box-shadow: 6px 6px 0px var(--shadow-color);
+    border-radius: 4px;
+}
+
+.rustic-frame p {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+@keyframes slideInFade {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@media (max-width: 600px) {
+    .chapter-nav {
+        margin: 0;
+        gap: 8px;
+    }
+
+    #content {
+        padding-top: 15px;
+    }
+
+    .settings-menu {
+        position: fixed;
+        width: auto;
+        left: 20px;
+        right: 20px;
+        bottom: 100px;
+        margin-bottom: 0;
+        transform-origin: bottom center;
+    }
+
+    .nav-link {
+        padding: 10px 5px;
+        flex: 1;
+        min-width: 0;
+        font-size: 0.85rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .chapter-nav.sticky-top {
+        padding: 10px 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+}

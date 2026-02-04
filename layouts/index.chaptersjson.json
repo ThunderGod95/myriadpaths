@@ -1,0 +1,15 @@
+{{- $chapters := slice -}}
+{{- $pages := where .Site.RegularPages "Section" "chapters" -}}
+
+{{- $pages := sort $pages "Params.id" "asc" -}}
+
+{{- range $pages -}}
+  {{- $chapterData := dict
+    "id" (int .Params.id)
+    "title" .Title
+    "url" .RelPermalink
+  -}}
+  {{- $chapters = $chapters | append $chapterData -}}
+{{- end -}}
+
+{{- $chapters | jsonify -}}

@@ -1,0 +1,47 @@
+baseURL: https://thundergod95.github.io/myriadpaths/
+languageCode: en-us
+title: My New Hugo Site
+
+mediaTypes:
+    text/javascript:
+        suffixes:
+            - js
+    application/manifest+json:
+        suffixes:
+            - webmanifest
+
+outputFormats:
+    ServiceWorker:
+        mediaType: text/javascript
+        baseName: sw
+        isPlainText: true
+        notAlternative: true
+    Offline:
+        mediaType: text/html
+        baseName: offline
+        isPlainText: false
+        notAlternative: true
+    WebAppManifest:
+        mediaType: application/manifest+json
+        rel: manifest
+        baseName: site
+        isPlainText: true
+        notAlternative: true
+    ChaptersJSON:
+        mediaType: application/json
+        baseName: chapters
+        isPlainText: true
+        notAlternative: true
+
+outputs:
+    home:
+        - HTML
+        - ServiceWorker
+        - Offline
+        - WebAppManifest
+        - ChaptersJSON
+
+markup:
+    goldmark:
+        renderer:
+            unsafe: true
