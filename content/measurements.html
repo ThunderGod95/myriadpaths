@@ -1,0 +1,589 @@
+---
+title: "Sino Scale Converter"
+description: "Convert traditional Chinese cultivation units (Li, Zhang, Catty, Shichen) to metric measurements."
+---
+
+<style>
+    .converter-card {
+        background-color: var(--menu-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 40px auto;
+        box-shadow: 0 10px 40px -10px var(--shadow-color);
+        transition: all 0.3s ease;
+    }
+
+    .converter-header {
+        margin-bottom: 24px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+    }
+
+    .converter-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .converter-body {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .amount-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .amount-section label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-color);
+        opacity: 0.6;
+    }
+
+    .control-input {
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 2px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-color);
+        font-size: 1.2rem;
+        font-weight: 600;
+        width: 100%;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .control-input:focus {
+        outline: none;
+        border-color: var(--accent-color);
+    }
+
+    .unit-selection-grid {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .unit-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .unit-column label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        opacity: 0.7;
+    }
+
+    select {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--input-bg);
+        color: var(--text-color);
+        font-size: 0.95rem;
+        width: 100%;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.7em top 50%;
+        background-size: 0.65em auto;
+        padding-right: 1.5em;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: var(--accent-color);
+    }
+
+    .direction-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 22px;
+    }
+
+    .swap-btn {
+        background-color: var(--menu-bg);
+        border: 1px solid var(--border-color);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-color);
+        transition:
+            transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+            box-shadow 0.2s;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .swap-btn:hover {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+
+    .swap-btn svg {
+        transition: transform 0.3s ease;
+    }
+
+    .swap-btn.pointing-right svg {
+        transform: rotate(0deg);
+    }
+
+    .swap-btn.pointing-left svg {
+        transform: rotate(180deg);
+    }
+
+    .result-box {
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100px;
+    }
+
+    .result-value {
+        font-size: 2.5em;
+        font-weight: 800;
+        color: var(--accent-color);
+        line-height: 1.1;
+        font-family: var(--font-family);
+        word-break: break-all;
+    }
+
+    .result-unit {
+        font-size: 1.1em;
+        font-weight: 500;
+        opacity: 0.8;
+        margin-top: 4px;
+        color: var(--text-color);
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        color: var(--text-color);
+        opacity: 0.3;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+        opacity: 1;
+        background-color: var(--hover-bg);
+    }
+
+    .info-note {
+        padding: 12px;
+        background-color: var(--menu-bg);
+        border-radius: 8px;
+        font-size: 0.9em;
+        color: var(--text-color);
+        opacity: 0.8;
+        text-align: center;
+        border: 1px dashed var(--border-color);
+    }
+
+    @media (max-width: 500px) {
+        .unit-selection-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .direction-control {
+            padding-top: 0;
+        }
+        .swap-btn {
+            transform: rotate(90deg);
+        }
+        .swap-btn.pointing-left {
+            transform: rotate(270deg);
+        }
+    }
+</style>
+
+<div class="converter-card">
+    <div class="converter-header">
+        <h2>Sino Scale</h2>
+    </div>
+
+    <div class="converter-body">
+        <div class="amount-section">
+            <label id="inputLabel">Amount (Sino)</label>
+            <input
+                type="number"
+                id="inputValue"
+                class="control-input"
+                value="1"
+                min="0"
+                placeholder="Enter value..."
+                oninput="calculate()"
+            />
+        </div>
+
+        <div class="unit-selection-grid">
+            <div class="unit-column">
+                <label>Sino Unit</label>
+                <select id="sinoSelect" onchange="handleSinoChange()">
+                    <optgroup label="Distance / Length">
+                        <option value="li" selected>Li (里)</option>
+                        <option value="zhang">Zhang (丈)</option>
+                        <option value="chi">Chi (尺)</option>
+                        <option value="cun">Cun (寸)</option>
+                    </optgroup>
+                    <optgroup label="Weight / Mass">
+                        <option value="dan">Dan (石)</option>
+                        <option value="jin">Jin (斤)</option>
+                        <option value="liang">Liang (两)</option>
+                        <option value="qian">Qian (钱)</option>
+                    </optgroup>
+                    <optgroup label="Time">
+                        <option value="shichen">Shichen (2hr)</option>
+                        <option value="ke">Ke (15min)</option>
+                        <option value="incense">Incense</option>
+                        <option value="tea">Cup of Tea</option>
+                        <option value="breath">Breath</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="direction-control">
+                <button
+                    class="swap-btn pointing-right"
+                    id="swapBtn"
+                    onclick="toggleDirection()"
+                    title="Swap Direction"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="unit-column">
+                <label>Modern Unit</label>
+                <select id="modernSelect" onchange="calculate()"></select>
+            </div>
+        </div>
+
+        <div class="result-box">
+            <button class="copy-btn" onclick="copyResult()" title="Copy result">
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <rect
+                        x="9"
+                        y="9"
+                        width="13"
+                        height="13"
+                        rx="2"
+                        ry="2"
+                    ></rect>
+                    <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    ></path>
+                </svg>
+            </button>
+            <span class="result-value" id="outputValue">-</span>
+            <span class="result-unit" id="outputUnit">-</span>
+        </div>
+
+        <div class="info-note" id="infoNote">
+            Standard cultivation distance unit.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Direction: 'sinoToModern' (default) or 'modernToSino'
+    let direction = "sinoToModern";
+
+    const SINO_UNITS = {
+        li: {
+            base: 500,
+            type: "dist",
+            desc: "Standard cultivation distance unit (~500m).",
+        },
+        zhang: {
+            base: 3.333333333,
+            type: "dist",
+            desc: "Used for height or short distances (~3.33m).",
+        },
+        chi: {
+            base: 0.333333333,
+            type: "dist",
+            desc: "Similar to a foot (~33cm).",
+        },
+        cun: {
+            base: 0.033333333,
+            type: "dist",
+            desc: "Similar to an inch (~3.3cm).",
+        },
+
+        dan: {
+            base: 50,
+            type: "weight",
+            desc: "A heavy load, roughly a picul (50kg).",
+        },
+        jin: { base: 0.5, type: "weight", desc: "Standard 'Catty' (500g)." },
+        liang: {
+            base: 0.05,
+            type: "weight",
+            desc: "Small weight, 'Tael' (50g).",
+        },
+        qian: {
+            base: 0.005,
+            type: "weight",
+            desc: "Very small weight, 'Mace' (5g).",
+        },
+
+        shichen: {
+            base: 120,
+            type: "time",
+            desc: "One of the 12 Earthly Branches (2 hours).",
+        },
+        ke: { base: 15, type: "time", desc: "Standard quarter-hour." },
+        incense: {
+            base: 30,
+            type: "time",
+            desc: "Approximate time to burn one stick.",
+        },
+        tea: {
+            base: 10,
+            type: "time",
+            desc: "Time to drink a hot tea (~10 mins).",
+        },
+        breath: {
+            base: 0.05,
+            type: "time",
+            desc: "One respiration cycle (~3s).",
+        },
+    };
+
+    const MODERN_UNITS = {
+        dist: [
+            { key: "m", name: "Meters (m)", factor: 1 },
+            { key: "km", name: "Kilometers (km)", factor: 1000 },
+            { key: "cm", name: "Centimeters (cm)", factor: 0.01 },
+            { key: "mm", name: "Millimeters (mm)", factor: 0.001 },
+            { key: "mi", name: "Miles", factor: 1609.344 },
+            { key: "ft", name: "Feet", factor: 0.3048 },
+            { key: "in", name: "Inches", factor: 0.0254 },
+            { key: "yd", name: "Yards", factor: 0.9144 },
+        ],
+        weight: [
+            { key: "kg", name: "Kilograms (kg)", factor: 1 },
+            { key: "g", name: "Grams (g)", factor: 0.001 },
+            { key: "t", name: "Tonnes", factor: 1000 },
+            { key: "lb", name: "Pounds (lb)", factor: 0.45359237 },
+            { key: "oz", name: "Ounces (oz)", factor: 0.02834952 },
+        ],
+        time: [
+            { key: "min", name: "Minutes", factor: 1 },
+            { key: "sec", name: "Seconds", factor: 1 / 60 },
+            { key: "hr", name: "Hours", factor: 60 },
+            { key: "day", name: "Days", factor: 1440 },
+        ],
+    };
+
+    function init() {
+        populateModernOptions("dist");
+
+        const params = new URLSearchParams(window.location.search);
+        const unitParam = params.get("unit");
+        const qtyParam = params.get("qty");
+
+        if (unitParam && SINO_UNITS.hasOwnProperty(unitParam)) {
+            const sinoSelect = document.getElementById("sinoSelect");
+            sinoSelect.value = unitParam;
+            handleSinoChange();
+        }
+
+        if (qtyParam && !isNaN(parseFloat(qtyParam))) {
+            document.getElementById("inputValue").value = qtyParam;
+        }
+
+        calculate();
+    }
+
+    function handleSinoChange() {
+        const sinoKey = document.getElementById("sinoSelect").value;
+        const type = SINO_UNITS[sinoKey].type;
+
+        document.getElementById("infoNote").innerText =
+            SINO_UNITS[sinoKey].desc;
+
+        const currentModernType = document
+            .getElementById("modernSelect")
+            .getAttribute("data-type");
+
+        if (currentModernType !== type) {
+            populateModernOptions(type);
+        }
+
+        calculate();
+    }
+
+    function populateModernOptions(type) {
+        const select = document.getElementById("modernSelect");
+        select.innerHTML = "";
+        select.setAttribute("data-type", type);
+
+        const options = MODERN_UNITS[type];
+        options.forEach((opt) => {
+            const el = document.createElement("option");
+            el.value = opt.factor;
+            el.text = opt.name;
+            el.setAttribute("data-name", opt.name);
+            select.appendChild(el);
+        });
+    }
+
+    function toggleDirection() {
+        direction =
+            direction === "sinoToModern" ? "modernToSino" : "sinoToModern";
+
+        const btn = document.getElementById("swapBtn");
+        if (direction === "modernToSino") {
+            btn.classList.remove("pointing-right");
+            btn.classList.add("pointing-left");
+        } else {
+            btn.classList.remove("pointing-left");
+            btn.classList.add("pointing-right");
+        }
+
+        const resultVal = parseFloat(
+            document.getElementById("outputValue").innerText,
+        );
+        const inputEl = document.getElementById("inputValue");
+        if (!isNaN(resultVal)) {
+            inputEl.value = resultVal;
+        }
+
+        updateInputLabel();
+        calculate();
+    }
+
+    function updateInputLabel() {
+        const label = document.getElementById("inputLabel");
+        const sinoSel = document.getElementById("sinoSelect");
+        const modSel = document.getElementById("modernSelect");
+
+        const sinoName =
+            sinoSel.options[sinoSel.selectedIndex].text.split(" ")[0];
+        const modName =
+            modSel.options[modSel.selectedIndex].getAttribute("data-name");
+
+        if (direction === "sinoToModern") {
+            label.innerText = `Amount (${sinoName})`;
+        } else {
+            label.innerText = `Amount (${modName})`;
+        }
+    }
+
+    function calculate() {
+        const inputVal = parseFloat(
+            document.getElementById("inputValue").value,
+        );
+        if (isNaN(inputVal)) {
+            document.getElementById("outputValue").innerText = "-";
+            document.getElementById("outputUnit").innerText = "";
+            return;
+        }
+
+        const sinoKey = document.getElementById("sinoSelect").value;
+        const sinoData = SINO_UNITS[sinoKey];
+
+        const modSelect = document.getElementById("modernSelect");
+        const modFactor = parseFloat(modSelect.value);
+        const modName =
+            modSelect.options[modSelect.selectedIndex].getAttribute(
+                "data-name",
+            );
+
+        let result = 0;
+
+        if (direction === "sinoToModern") {
+            const baseValue = inputVal * sinoData.base;
+            result = baseValue / modFactor;
+
+            document.getElementById("outputUnit").innerText = modName;
+        } else {
+            const baseValue = inputVal * modFactor;
+            result = baseValue / sinoData.base;
+
+            document.getElementById("outputUnit").innerText =
+                SINO_UNITS[sinoKey].desc.split(" ")[0] + " (" + sinoKey + ")";
+        }
+
+        let displayVal;
+        if (result === 0) displayVal = 0;
+        else if (result < 0.001 || result > 100000)
+            displayVal = result.toExponential(4);
+        else if (Number.isInteger(result)) displayVal = result;
+        else displayVal = parseFloat(result.toFixed(4));
+
+        document.getElementById("outputValue").innerText = displayVal;
+
+        updateInputLabel();
+    }
+
+    function copyResult() {
+        const val = document.getElementById("outputValue").innerText;
+        const unit = document.getElementById("outputUnit").innerText;
+        if (val === "-") return;
+
+        navigator.clipboard.writeText(`${val} ${unit}`).then(() => {
+            const btn = document.querySelector(".copy-btn");
+            const original = btn.innerHTML;
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            setTimeout(() => (btn.innerHTML = original), 1500);
+        });
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+</script>

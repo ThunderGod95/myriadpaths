@@ -1,0 +1,21 @@
+{{/* layouts/shortcodes/sino.html */}} {{ $qty := .Get "qty" }} {{ $text :=
+.Inner }} {{ $lowerText := lower $text }} {{ $unit := "li" }} {{/* Default
+fallback */}} {{ if or (in $lowerText "li") (in $lowerText "里") }} {{ $unit =
+"li" }} {{ else if or (in $lowerText "zhang") (in $lowerText "丈") }} {{ $unit =
+"zhang" }} {{ else if or (in $lowerText "chi") (in $lowerText "尺") }} {{ $unit
+= "chi" }} {{ else if or (in $lowerText "cun") (in $lowerText "寸") }} {{ $unit
+= "cun" }} {{ else if or (in $lowerText "dan") (in $lowerText "石") }} {{ $unit
+= "dan" }} {{ else if or (in $lowerText "jin") (in $lowerText "斤") }} {{ $unit
+= "jin" }} {{ else if or (in $lowerText "liang") (in $lowerText "两") }} {{
+$unit = "liang" }} {{ else if or (in $lowerText "qian") (in $lowerText "钱") }}
+{{ $unit = "qian" }} {{ else if or (in $lowerText "shichen") (in $lowerText
+"2hr") }} {{ $unit = "shichen" }} {{ else if or (in $lowerText "ke") (in
+$lowerText "15min") }} {{ $unit = "ke" }} {{ else if (in $lowerText "incense")
+}} {{ $unit = "incense" }} {{ else if (in $lowerText "tea") }} {{ $unit = "tea"
+}} {{ else if (in $lowerText "breath") }} {{ $unit = "breath" }} {{ end }}
+<a href="{{ "measurements" | relURL }}?qty={{ $qty }}&unit={{ $unit }}"
+   class="sino-link"
+   title="Convert {{ $text }}"
+   onclick="openSinoModal(event, this.href)">
+  {{ $text }}
+</a>

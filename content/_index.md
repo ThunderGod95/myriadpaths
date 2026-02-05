@@ -1,14 +1,14 @@
 ---
 title: "The Long Journey of Myriad Paths"
 short_name: "Myriad Paths"
-description: "Awaking with 700,000 in debt, Zhang Yu finds himself in a world where immortality is pay-to-win. Desperate, he summons an Evil God for help—only to be forced to work to grant HER wishes."
-keywords: ["The Long Journey of Myriad Paths", "Myriad Paths", "Hollowed Out Brains", "Xianxia", "Cultivation", "Web Novel"]
+description: "Dive into 'Myriad Paths'. From a lonely earthen mound to the vast world beyond, witness a tale where history fades but the Myriad Paths of the journey remain endless."
+keywords: ["Myriad Paths", "Wan Dao Chang Tu", "Da Nao Bei Tao Kong", "Fantasy Novel", "Cultivation", "Martial Arts", "Xianxia", "Li Qi", "Dao", "Strategy", "Demons", "Tang State", "Complete Novel", "Webnovel"]
 author: "Hollowed Out Brain (大脑被掏空)"
 translator: "ThunderGod95"
 images: ["img/cover.webp"]
 links:
   - name: "Discord"
-    url: ""
+    url: "https://discord.gg/EmEJmvwYUS"
   - name: "Fandom Wiki"
     url: ""
   - name: "Raws"
