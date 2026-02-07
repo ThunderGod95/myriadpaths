@@ -89,32 +89,7 @@
                 opacity: 0.5;
             }
         </style>
-
-        <script>
-            try {
-                const saved = localStorage.getItem("reader-settings");
-                if (saved) {
-                    const theme = JSON.parse(saved).theme || "light";
-                    const themes = {
-                        light: { bg: "#fdfdfd", text: "#333333" },
-                        sepia: { bg: "#f4ecd8", text: "#5b4636" },
-                        dark: { bg: "#222222", text: "#d1d1d1" },
-                        midnight: { bg: "#2b323b", text: "#c4cdd5" },
-                        forest: { bg: "#e8f5e9", text: "#2d3b2d" },
-                        amoled: { bg: "#000000", text: "#b3b3b3" },
-                    };
-                    const t = themes[theme] || themes.light;
-                    document.documentElement.style.setProperty(
-                        "--bg-color",
-                        t.bg,
-                    );
-                    document.documentElement.style.setProperty(
-                        "--text-color",
-                        t.text,
-                    );
-                }
-            } catch (e) {}
-        </script>
+        {{ partial "theme-loader.html" }}
     </head>
     <body>
         <svg class="icon" viewBox="0 0 24 24" fill="currentColor">

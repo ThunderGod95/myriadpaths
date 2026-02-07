@@ -1,0 +1,44 @@
+<script>
+    (function () {
+        try {
+            let savedSettings = localStorage.getItem("reader-settings");
+            let theme = "light";
+            let fontSize = "18px";
+            let lineHeight = "1.6";
+            let fontFamily = "'Open Sans', sans-serif";
+            let letterSpacing = "0px";
+
+            if (savedSettings) {
+                var settings = JSON.parse(savedSettings);
+                theme = settings.theme || "light";
+                fontSize = (settings.fontSize || 18) + "px";
+                lineHeight = settings.lineHeight || 1.6;
+                letterSpacing = (settings.letterSpacing || 0) + "px";
+
+                if (settings.fontFamily) fontFamily = settings.fontFamily;
+            }
+
+            const themes = {
+                light: { bg: "#fdfdfd", text: "#333333" },
+                sepia: { bg: "#f4ecd8", text: "#5b4636" },
+                dark: { bg: "#222222", text: "#d1d1d1" },
+                midnight: { bg: "#2b323b", text: "#c4cdd5" },
+                forest: { bg: "#e8f5e9", text: "#2d3b2d" },
+                amoled: { bg: "#000000", text: "#b3b3b3" },
+            };
+
+            var activeTheme = themes[theme] || themes.light;
+            var root = document.documentElement;
+
+            root.style.setProperty("--bg-color", activeTheme.bg);
+            root.style.setProperty("--text-color", activeTheme.text);
+            root.style.setProperty("--font-family", fontFamily);
+            root.style.setProperty("--text-size", fontSize);
+            root.style.setProperty("--line-height", lineHeight);
+            root.style.setProperty("--letter-spacing", letterSpacing);
+            root.setAttribute("data-theme", theme);
+        } catch (e) {
+            console.error("Theme initialization failed", e);
+        }
+    })();
+</script>
