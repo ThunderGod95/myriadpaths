@@ -1,12 +1,16 @@
-# The Great Invocator (Da Zhu)
+---
+title: "Grand Invocator"
+---
+
+# The Grand Invocator (Da Zhu)
 
 **Source:** _The Rites of Zhou_ (Zhouli) — "Spring Offices" (Chunguan) **Role:** Senior Religious Official / Master of Liturgy
 
-The Great Invocator (Dà Zhù | 大祝) is a high-ranking ritual official described in the Rites of Zhou. Located within the Ministry of Spring (which governed rites, music, and religion), the Great Invocator served as the primary intermediary between the Zhou royal court and the spiritual realm. Their duties were strictly defined by the need to maintain precise bureaucratic order among humans, ghosts, and gods.
+The Grand Invocator (Dà Zhù | 大祝) is a high-ranking ritual official described in the Rites of Zhou. Located within the Ministry of Spring (which governed rites, music, and religion), the Grand Invocator served as the primary intermediary between the Zhou royal court and the spiritual realm. Their duties were strictly defined by the need to maintain precise bureaucratic order among humans, ghosts, and gods.
 
 ## Management of Rituals (The Six Categories)
 
-The Great Invocator was responsible for the "Six Prayers" and "Six Invocations." In historical texts, these two categories often overlapped in classification but differed in function (one for seeking blessings, one for preventing calamity).
+The Grand Invocator was responsible for the "Six Prayers" and "Six Invocations." In historical texts, these two categories often overlapped in classification but differed in function (one for seeking blessings, one for preventing calamity).
 
 ### Six Prayers (Liù Qí | 六祈)
 
@@ -22,13 +26,13 @@ These were specific liturgical categories used to solicit blessings or favorable
 ### The Six Invocations vs. Six Calamities
 
 * **Historical Text:** The *Rites of Zhou* lists "The Six Invocations" (**Liù Zhù | 六祝**), which mirror the categories above (Lei, Zao, Gui, etc.).
-* **Textual Note:** The novel uses the term "Six Calamites/Misfortunes" (**Liù Huò | 六祸**). This is a narrative variation. Historically, the "Six Invocations" included rites to *prevent* misfortune (calamities); the Great Invocator mastered the "language of calamity" to avert it.
+* **Textual Note:** The novel uses the term "Six Calamites/Misfortunes" (**Liù Huò | 六祸**). This is a narrative variation. Historically, the "Six Invocations" included rites to *prevent* misfortune (calamities); the Grand Invocator mastered the "language of calamity" to avert it.
 
 ## Liturgical Duties
 
 ### Composing the Six Odes (Zuò Liù Cí | 作六辞)
 
-The Great Invocator composed and recited the formal speeches used during sacrifices. These were not improvised prayers but highly technical legalistic documents presented to the gods. They included:
+The Grand Invocator composed and recited the formal speeches used during sacrifices. These were not improvised prayers but highly technical legalistic documents presented to the gods. They included:
 
 * **Conducting Speeches:** For directing the flow of the ritual.
 * **Commanding Speeches:** For ordering spirits or lesser officials.
@@ -72,4 +76,4 @@ The Invocator enforced the "Nine Etiquettes" of bowing, which defined the status
 * **Function:** Purification.
 * **Water:** Used to cleanse the sacrificial vessels and the altar space (lustration).
 * **Fire:** Used to cleanse the air and, crucially, to transmit the offering (via smoke) to the celestial realm.
-* **Symbolism:** The Great Invocator stood at the intersection of Yin (Water) and Yang (Fire) to open the channel to the divine.
+* **Symbolism:** The Grand Invocator stood at the intersection of Yin (Water) and Yang (Fire) to open the channel to the divine.

@@ -60,8 +60,12 @@ const DOM = {
 };
 
 const NavigationManager = {
-    prevUrl: PREV_CHAPTER_NUM ? `/nmtci/translations/${PREV_CHAPTER_NUM}` : "",
-    nextUrl: NEXT_CHAPTER_NUM ? `/nmtci/translations/${NEXT_CHAPTER_NUM}` : "",
+    prevUrl: PREV_CHAPTER_NUM
+        ? `/myriadpaths/chapters/${PREV_CHAPTER_NUM}/`
+        : "",
+    nextUrl: NEXT_CHAPTER_NUM
+        ? `/myriadpaths/chapters/${NEXT_CHAPTER_NUM}/`
+        : "",
 
     init() {
         this.updateLinks();
