@@ -83,31 +83,13 @@
 
         <div class="sticky-bar" id="topNav">
             <nav class="chapter-nav">
-                {{ if .PrevInSection }}
-                <a
-                    class="nav-link nav-prev"
-                    href="{{ .PrevInSection.RelPermalink }}"
-                    >← Previous</a
-                >
-                {{ else }}
                 <a class="nav-link nav-prev disabled">← Previous</a>
-                {{ end }}
-
                 <a
                     class="nav-link nav-toc"
                     href="{{ `/myriadpaths/` | relURL }}"
                     >Index</a
                 >
-
-                {{ if .NextInSection }}
-                <a
-                    class="nav-link nav-next"
-                    href="{{ .NextInSection.RelPermalink }}"
-                    >Next →</a
-                >
-                {{ else }}
                 <a class="nav-link nav-next disabled">Next →</a>
-                {{ end }}
             </nav>
         </div>
 

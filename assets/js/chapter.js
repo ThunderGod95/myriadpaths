@@ -62,14 +62,10 @@ const DOM = {
 const NavigationManager = {
     prevUrl: PREV_CHAPTER_NUM
         ? `/myriadpaths/chapters/${PREV_CHAPTER_NUM}/`
-        : document
-              .querySelector(".nav-prev:not(.disabled)")
-              ?.getAttribute("href") || "",
+        : "",
     nextUrl: NEXT_CHAPTER_NUM
         ? `/myriadpaths/chapters/${NEXT_CHAPTER_NUM}/`
-        : document
-              .querySelector(".nav-next:not(.disabled)")
-              ?.getAttribute("href") || "",
+        : "",
 
     init() {
         this.updateLinks();
