@@ -543,12 +543,11 @@
         | fingerprint }}
         <script src="{{ $floatingDom.RelPermalink }}"></script>
 
-        {{- $chapterJs := resources.Get "js/chapter.js" -}} {{- if $chapterJs
-        -}} {{- $chapterJs = $chapterJs | resources.ExecuteAsTemplate
-        "js/chapter.js" . | minify | fingerprint -}}
+        {{- $chapterJs := resources.Get "js/chapter.js" |
+        resources.ExecuteAsTemplate "js/chapter.js" . | minify | fingerprint -}}
         <script src="{{ $chapterJs.RelPermalink }}"></script>
-        {{- end -}} {{ $highlightJs := resources.Get "js/highlight.js" | minify
-        | fingerprint }}
+        {{ $highlightJs := resources.Get "js/highlight.js" | minify |
+        fingerprint }}
         <script src="{{ $highlightJs.RelPermalink }}"></script>
 
         {{ $audioJs := resources.Get "js/audio.js" | minify | fingerprint }}
@@ -566,41 +565,6 @@
                             console.log("Registration failed:", err),
                         );
                 });
-            }
-
-            function openSinoModal(event, url) {
-                event.preventDefault();
-
-                const existing = document.getElementById("sino-modal");
-                if (existing) existing.remove();
-
-                const overlay = document.createElement("div");
-                overlay.id = "sino-modal";
-                overlay.className = "sino-modal-overlay";
-
-                const box = document.createElement("div");
-                box.className = "sino-modal-box";
-
-                const closeBtn = document.createElement("button");
-                closeBtn.innerHTML = "&times;";
-                closeBtn.className = "sino-modal-close";
-                closeBtn.onclick = function () {
-                    overlay.remove();
-                };
-
-                const iframe = document.createElement("iframe");
-                iframe.src = url;
-                iframe.className = "sino-modal-iframe";
-
-                box.appendChild(closeBtn);
-                box.appendChild(iframe);
-                overlay.appendChild(box);
-
-                overlay.onclick = function (e) {
-                    if (e.target === overlay) overlay.remove();
-                };
-
-                document.body.appendChild(overlay);
             }
         </script>
     </body>

@@ -91,10 +91,7 @@ const NavigationManager = {
     },
 
     async syncNavigation() {
-        const pathSegments = window.location.pathname
-            .replace(/\/$/, "")
-            .split("/");
-        const currentId = parseInt(pathSegments.pop());
+        const currentId = CHAPTER_NUM;
         if (isNaN(currentId)) return;
 
         const idealPrevId = currentId - 1;
@@ -103,7 +100,7 @@ const NavigationManager = {
         const isPrevAligned =
             !this.prevUrl || this.prevUrl.includes(`/${idealPrevId}/`);
         const isNextAligned =
-            !this.nextUrl || this.nextUrl.includes(`/${idealNextId}/`);
+            this.nextUrl && this.nextUrl.includes(`/${idealNextId}/`);
 
         if (isPrevAligned && isNextAligned) {
             return;

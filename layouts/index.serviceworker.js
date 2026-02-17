@@ -4,10 +4,14 @@
 {{- $indexCss := resources.Get "css/index.css" | minify | fingerprint -}}
 {{- $floatingCore := resources.Get "js/vendor/floating-ui/core.js" | minify | fingerprint -}}
 {{- $floatingDom := resources.Get "js/vendor/floating-ui/dom.js" | minify | fingerprint -}}
-{{- $chapterJs := resources.Get "js/chapter.js" | minify | fingerprint -}}
-{{- $indexJs := resources.Get "js/index.js" | minify | fingerprint -}}
 {{- $highlightJs := resources.Get "js/highlight.js" | minify | fingerprint -}}
 {{- $audioJs := resources.Get "js/audio.js" | minify | fingerprint -}}
+{{- $indexJs := resources.Get "js/index.js" -}}
+{{- $indexJs = $indexJs | resources.ExecuteAsTemplate "js/index.js" . -}}
+{{- $indexJs = $indexJs | minify | fingerprint -}}
+{{- $chapterJs := resources.Get "js/chapter.js" -}}
+{{- $chapterJs = $chapterJs | resources.ExecuteAsTemplate "js/chapter.js" . -}}
+{{- $chapterJs = $chapterJs | minify | fingerprint -}}
 
 {{- $assetsToHash := slice
     $styles.Data.Integrity
