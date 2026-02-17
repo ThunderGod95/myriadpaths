@@ -532,7 +532,7 @@
             const PREV_CHAPTER_NUM = "{{ .Params.prev }}";
             const NEXT_CHAPTER_NUM = "{{ .Params.next }}";
             const CHAPTER_TITLE = `{{ .Title }}`;
-            const CHAPTER_NUM = {{ .Params.id }};
+            const CHAPTER_NUM = {{ .Params.id | int }};
         </script>
 
         {{ $floatingCore := resources.Get "js/vendor/floating-ui/core.js" |
