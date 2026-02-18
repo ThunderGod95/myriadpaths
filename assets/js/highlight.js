@@ -322,13 +322,13 @@ const HighlightManager = {
     removeHighlight(id) {
         if (!id) return;
 
-        const span = this.dom.getHighlightElement(id);
-        if (span) {
+        const spans = this.dom.getHighlightElement(id);
+        spans.forEach((span) => {
             const parent = span.parentNode;
             while (span.firstChild) parent.insertBefore(span.firstChild, span);
             parent.removeChild(span);
             parent.normalize();
-        }
+        });
 
         this.storage.delete(this.state.storageKey, id);
 
@@ -337,19 +337,19 @@ const HighlightManager = {
     },
 
     _updateHighlightColor(color) {
-        const span = this.dom.getHighlightElement(this.state.activeId);
-        if (span) {
+        const spans = this.dom.getHighlightElement(this.state.activeId);
+        spans.forEach((span) => {
             span.classList.forEach((cls) => {
                 if (cls.startsWith("highlight-") && cls !== "highlight") {
                     span.classList.remove(cls);
                 }
             });
             span.classList.add(`highlight-${color}`);
+        });
 
-            this.storage.update(this.state.storageKey, this.state.activeId, {
-                color,
-            });
-        }
+        this.storage.update(this.state.storageKey, this.state.activeId, {
+            color,
+        });
 
         this._finishAction();
         return this.state.activeId;
@@ -357,6 +357,10 @@ const HighlightManager = {
 
     _createNewHighlight(color) {
         const range = this.state.activeRange;
+
+        const id = crypto.randomUUID
+            ? crypto.randomUUID()
+            : Date.now().toString(36) + Math.random().toString(36).substr(2);
 
         if (!range.commonAncestorContainer.isConnected) {
             this._finishAction();
@@ -367,43 +371,92 @@ const HighlightManager = {
             range,
             this.config.selectors.paragraphs,
         );
+
         if (!context) {
             this._finishAction();
             return null;
         }
 
-        const { p, pIndex } = context;
-        const { start, end } = this.dom.calculateOffsets(range, p);
+        const { startPIndex, endPIndex } = context;
+        const allPs = document.querySelectorAll(
+            this.config.selectors.paragraphs,
+        );
 
-        if (
-            start >= end ||
-            this.dom.checkOverlap(
-                pIndex,
-                start,
-                end,
-                this.storage.get(this.state.storageKey),
-            )
-        ) {
-            console.warn("Invalid range or overlap detected.");
-            this._finishAction();
-            return null;
+        let fullText = "";
+        let globalStartOffset = 0;
+        let globalEndOffset = 0;
+
+        for (let i = startPIndex; i <= endPIndex; i++) {
+            const p = allPs[i];
+            let start = 0;
+            let end = p.textContent.length;
+
+            if (i === startPIndex) {
+                const preCaretRange = document.createRange();
+                preCaretRange.selectNodeContents(p);
+                preCaretRange.setEnd(range.startContainer, range.startOffset);
+                start = preCaretRange.toString().length;
+            }
+            if (i === endPIndex) {
+                const preCaretRange = document.createRange();
+                preCaretRange.selectNodeContents(p);
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                end = preCaretRange.toString().length;
+            }
+
+            if (
+                this.dom.checkOverlap(
+                    i,
+                    start,
+                    end,
+                    this.storage.get(this.state.storageKey),
+                )
+            ) {
+                console.warn(`Overlap detected in paragraph ${i}, aborting.`);
+                this._finishAction();
+                return null;
+            }
         }
 
-        const id = crypto.randomUUID
-            ? crypto.randomUUID()
-            : Date.now().toString(36) + Math.random().toString(36).substr(2);
+        for (let i = startPIndex; i <= endPIndex; i++) {
+            const p = allPs[i];
+            let start = 0;
+            let end = p.textContent.length;
 
-        if (!this.dom.wrapRange(range, id, color)) {
-            this._finishAction();
-            return null;
+            if (i === startPIndex) {
+                const preCaretRange = document.createRange();
+                preCaretRange.selectNodeContents(p);
+                preCaretRange.setEnd(range.startContainer, range.startOffset);
+                start = preCaretRange.toString().length;
+                globalStartOffset = start;
+            }
+
+            if (i === endPIndex) {
+                const preCaretRange = document.createRange();
+                preCaretRange.selectNodeContents(p);
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                end = preCaretRange.toString().length;
+                globalEndOffset = end;
+            }
+
+            if (fullText.length > 0) fullText += " ";
+            fullText += p.textContent.substring(start, end);
+
+            this.dom.restoreHighlightDOM(p, {
+                id,
+                color,
+                start,
+                end,
+            });
         }
 
         this.storage.save(this.state.storageKey, {
             id,
-            pIndex,
-            start,
-            end,
-            text: range.toString(),
+            startPIndex,
+            endPIndex,
+            startOffset: globalStartOffset,
+            endOffset: globalEndOffset,
+            text: fullText,
             color,
             note: "",
             pageTitle:
@@ -430,11 +483,23 @@ const HighlightManager = {
                 note: text,
             });
 
-            const span = this.dom.getHighlightElement(this.state.activeId);
-            if (span) {
-                if (text.trim()) span.classList.add("has-note");
-                else span.classList.remove("has-note");
-                span.dataset.note = text;
+            const spans = this.dom.getHighlightElement(this.state.activeId);
+
+            if (spans.length > 0) {
+                spans.forEach((span, index) => {
+                    span.dataset.note = text;
+
+                    if (text.trim()) {
+                        span.classList.add("has-note");
+                        if (index === spans.length - 1) {
+                            span.classList.add("has-note-icon");
+                        } else {
+                            span.classList.remove("has-note-icon");
+                        }
+                    } else {
+                        span.classList.remove("has-note", "has-note-icon");
+                    }
+                });
             }
         }
 
@@ -465,10 +530,15 @@ const HighlightManager = {
             return;
         }
 
-        const container = range.commonAncestorContainer;
-        const node =
-            container.nodeType === 1 ? container : container.parentElement;
-        if (!node.closest("p")) return;
+        const context = this.dom.getSelectionContext(
+            range,
+            this.config.selectors.paragraphs,
+        );
+
+        if (!context) {
+            this.state.toolbar.style.display = "none";
+            return;
+        }
 
         this.state.activeRange = range;
         this.state.activeId = null;
@@ -504,10 +574,49 @@ const HighlightManager = {
         );
 
         list.forEach((item) => {
-            const p = allPs[item.pIndex];
-            if (!p) return;
+            const startIdx =
+                item.startPIndex !== undefined ? item.startPIndex : item.pIndex;
+            const endIdx =
+                item.endPIndex !== undefined ? item.endPIndex : item.pIndex;
 
-            this.dom.restoreHighlightDOM(p, item);
+            for (let i = startIdx; i <= endIdx; i++) {
+                const p = allPs[i];
+                if (!p) continue;
+
+                let start = 0;
+                let end = p.textContent.length;
+
+                if (i === startIdx) {
+                    start =
+                        item.startOffset !== undefined
+                            ? item.startOffset
+                            : item.start;
+                }
+
+                if (i === endIdx) {
+                    end =
+                        item.endOffset !== undefined
+                            ? item.endOffset
+                            : item.end;
+                }
+
+                this.dom.restoreHighlightDOM(p, {
+                    id: item.id,
+                    color: item.color,
+                    note: item.note,
+                    start: start,
+                    end: end,
+                });
+            }
+
+            if (item.note) {
+                const segments = this.dom.getHighlightElement(item.id);
+                if (segments.length > 0) {
+                    segments[segments.length - 1].classList.add(
+                        "has-note-icon",
+                    );
+                }
+            }
         });
     },
 
@@ -517,39 +626,48 @@ const HighlightManager = {
 
         const id = hash.slice(1);
 
-        const element = this.dom.getHighlightElement(id);
+        const elements = this.dom.getHighlightElement(id);
 
-        if (element) {
+        if (elements.length > 0) {
             setTimeout(() => {
-                element.scrollIntoView({ behavior: "smooth", block: "center" });
+                elements[0].scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
             }, 100);
         }
     },
 
     dom: {
         getHighlightElement(id) {
-            return document.querySelector(`.highlight[data-id="${id}"]`);
+            return document.querySelectorAll(`.highlight[data-id="${id}"]`);
         },
 
         getSelectionContext(range, pSelector) {
-            const container = range.commonAncestorContainer;
-            const node =
-                container.nodeType === Node.TEXT_NODE
-                    ? container.parentElement
-                    : container;
-            const p = node.closest(pSelector);
+            const startNode =
+                range.startContainer.nodeType === 3
+                    ? range.startContainer.parentElement
+                    : range.startContainer;
+            const endNode =
+                range.endContainer.nodeType === 3
+                    ? range.endContainer.parentElement
+                    : range.endContainer;
 
-            if (!p) return null;
-            if (
-                !p.contains(range.startContainer) ||
-                !p.contains(range.endContainer)
-            )
-                return null;
+            const startP = startNode.closest(pSelector);
+            const endP = endNode.closest(pSelector);
+
+            if (!startP || !endP) return null;
 
             const allPs = Array.from(document.querySelectorAll(pSelector));
-            const pIndex = allPs.indexOf(p);
+            const startPIndex = allPs.indexOf(startP);
+            const endPIndex = allPs.indexOf(endP);
 
-            return pIndex === -1 ? null : { p, pIndex };
+            if (startPIndex === -1 || endPIndex === -1) return null;
+
+            return {
+                startPIndex: Math.min(startPIndex, endPIndex),
+                endPIndex: Math.max(startPIndex, endPIndex),
+            };
         },
 
         calculateOffsets(range, p) {
@@ -560,10 +678,33 @@ const HighlightManager = {
             return { start, end: start + range.toString().length };
         },
 
-        checkOverlap(pIndex, start, end, existingHighlights) {
-            return existingHighlights.some(
-                (h) => h.pIndex === pIndex && start < h.end && end > h.start,
-            );
+        checkOverlap(pIndex, reqStart, reqEnd, existingHighlights) {
+            return existingHighlights.some((h) => {
+                const hStartP =
+                    h.startPIndex !== undefined ? h.startPIndex : h.pIndex;
+                const hEndP =
+                    h.endPIndex !== undefined ? h.endPIndex : h.pIndex;
+
+                if (pIndex < hStartP || pIndex > hEndP) return false;
+
+                let existingStartInThisPara = 0;
+                let existingEndInThisPara = Number.MAX_SAFE_INTEGER;
+
+                if (pIndex === hStartP) {
+                    existingStartInThisPara =
+                        h.startOffset !== undefined ? h.startOffset : h.start;
+                }
+
+                if (pIndex === hEndP) {
+                    existingEndInThisPara =
+                        h.endOffset !== undefined ? h.endOffset : h.end;
+                }
+
+                return (
+                    reqStart < existingEndInThisPara &&
+                    reqEnd > existingStartInThisPara
+                );
+            });
         },
 
         wrapRange(range, id, color) {
@@ -629,6 +770,7 @@ const HighlightManager = {
 
                     const span = document.createElement("span");
                     span.className = `highlight highlight-${item.color} ${item.note ? "has-note" : ""}`;
+
                     span.dataset.id = item.id;
                     if (item.note) span.dataset.note = item.note;
 
@@ -807,11 +949,12 @@ const HighlightManager = {
 
         update(key, id, changes) {
             this._write(key, (list) => {
-                const idx = list.findIndex((i) => i.id === id);
-                if (idx !== -1) {
-                    list[idx] = { ...list[idx], ...changes };
-                }
-                return list;
+                return list.map((item) => {
+                    if (item.id === id) {
+                        return { ...item, ...changes };
+                    }
+                    return item;
+                });
             });
         },
 
