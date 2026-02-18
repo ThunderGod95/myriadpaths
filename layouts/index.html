@@ -55,26 +55,7 @@ minify | fingerprint -}}
         <meta property="twitter:description" content="{{ .Description }}" />
         {{ with .Params.images }}
         <meta property="twitter:image" content="{{ index . 0 | relURL }}" />
-        {{ end }}
-
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-            rel="stylesheet"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&family=Bitter:ital,wght@0,100..900;1,100..900&family=Caveat:wght@400..700&family=Coming+Soon&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fira+Mono:wght@400;500;700&family=Indie+Flower&family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Patrick+Hand&display=swap"
-            rel="stylesheet"
-            media="print"
-            onload="this.media = 'all'"
-        />
-        <noscript>
-            <link
-                href="https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&family=Bitter:ital,wght@0,100..900;1,100..900&family=Caveat:wght@400..700&family=Coming+Soon&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fira+Mono:wght@400;500;700&family=Indie+Flower&family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Merriweather:ital,wght@0,300..900;1,300..900&family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Patrick+Hand&display=swap"
-                rel="stylesheet"
-            />
-        </noscript>
+        {{ end }} {{ partial "fonts.html" }}
 
         <link rel="stylesheet" href="{{ $styles.RelPermalink }}" />
         <link rel="stylesheet" href="{{ $indexStyle.RelPermalink }}" />
