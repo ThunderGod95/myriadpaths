@@ -30,6 +30,9 @@ const HighlightManager = {
             overviewContent: "#overviewContent",
             overviewCloseBtn: "#closeOverview",
             overviewToggleBtn: "#toggleHighlightsList",
+            overviewSearch: "#overviewSearch",
+            overviewSort: ".sort-btn",
+            overviewSortActive: ".sort-btn.active",
         },
     },
 
@@ -242,6 +245,28 @@ const HighlightManager = {
             });
         }
 
+        const searchInput = document.querySelector(
+            this.config.selectors.overviewSearch,
+        );
+        const sortBtns = document.querySelectorAll(
+            this.config.selectors.overviewSort,
+        );
+
+        const handleUpdate = () => {
+            this.ui.updateOverviewList(this);
+        };
+
+        if (searchInput) searchInput.addEventListener("input", handleUpdate);
+        if (sortBtns) {
+            sortBtns.forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    sortBtns.forEach((b) => b.classList.remove("active"));
+                    e.currentTarget.classList.add("active");
+                    handleUpdate();
+                });
+            });
+        }
+
         const overviewContent = document.querySelector(
             this.config.selectors.overviewContent,
         );
@@ -292,11 +317,7 @@ const HighlightManager = {
                     const content = document.querySelector(
                         this.config.selectors.overviewContent,
                     );
-                    this.ui.renderGlobalHighlights(
-                        content,
-                        allData,
-                        this.config.storagePrefix,
-                    );
+                    this.ui.updateOverviewList(this);
                 }
             });
         }
@@ -464,6 +485,7 @@ const HighlightManager = {
                     ? CHAPTER_TITLE
                     : document.title,
             chapterNum: typeof CHAPTER_NUM !== "undefined" ? CHAPTER_NUM : null,
+            createdAt: Date.now(),
         });
 
         this._finishAction();
@@ -837,20 +859,101 @@ const HighlightManager = {
             const overlay = document.querySelector(
                 manager.config.selectors.overviewOverlay,
             );
+            const searchInput = document.querySelector(
+                manager.config.selectors.overviewSearch,
+            );
+            const sortSelect = document.querySelector(
+                manager.config.selectors.overviewSort,
+            );
+            if (searchInput) searchInput.value = "";
+            if (sortSelect) sortSelect.value = "chapter";
+
+            this.updateOverviewList(manager);
+            overlay.classList.add("active");
+        },
+
+        updateOverviewList(manager) {
             const content = document.querySelector(
                 manager.config.selectors.overviewContent,
             );
+            const searchInput = document.querySelector(
+                manager.config.selectors.overviewSearch,
+            );
+            const activeSortBtn = document.querySelector(
+                manager.config.selectors.overviewSortActive,
+            );
 
-            const allData = manager.storage.getAllGlobal(
+            const query = searchInput ? searchInput.value.toLowerCase() : "";
+            const sortMode = activeSortBtn
+                ? activeSortBtn.dataset.value
+                : "chapter";
+
+            let rawData = manager.storage.getAllGlobal(
                 manager.config.storagePrefix,
             );
+
+            let processedData = [];
+
+            if (sortMode === "chapter") {
+                processedData = rawData
+                    .map((chapter) => {
+                        const filtered = chapter.highlights.filter(
+                            (hl) =>
+                                (hl.text &&
+                                    hl.text.toLowerCase().includes(query)) ||
+                                (hl.note &&
+                                    hl.note.toLowerCase().includes(query)),
+                        );
+                        return { ...chapter, highlights: filtered };
+                    })
+                    .filter((ch) => ch.highlights.length > 0);
+            } else {
+                let allHighlights = [];
+
+                rawData.forEach((chapter) => {
+                    chapter.highlights.forEach((hl) => {
+                        if (
+                            (!hl.text ||
+                                !hl.text.toLowerCase().includes(query)) &&
+                            (!hl.note || !hl.note.toLowerCase().includes(query))
+                        ) {
+                            return;
+                        }
+
+                        allHighlights.push({
+                            ...hl,
+                            _chapterPath: chapter.path,
+                            _chapterTitle: chapter.title,
+                        });
+                    });
+                });
+
+                allHighlights.sort((a, b) => {
+                    const timeA = a.createdAt || 0;
+                    const timeB = b.createdAt || 0;
+
+                    return sortMode === "newest"
+                        ? timeB - timeA
+                        : timeA - timeB;
+                });
+
+                if (allHighlights.length > 0) {
+                    processedData = [
+                        {
+                            path: "",
+                            title: `Search Results (${allHighlights.length})`,
+                            highlights: allHighlights,
+                            isFlatList: true,
+                        },
+                    ];
+                }
+            }
+
             this.renderGlobalHighlights(
                 content,
-                allData,
+                processedData,
                 manager.config.storagePrefix,
             );
-
-            overlay.classList.add("active");
         },
 
         closeOverviewModal() {
@@ -860,54 +963,72 @@ const HighlightManager = {
         },
 
         renderGlobalHighlights(container, data, storagePrefix) {
-            if (data.length === 0) {
-                container.innerHTML = `<div class="overview-empty">No highlights found yet. Start reading!</div>`;
+            if (!data?.length) {
+                container.innerHTML = `<div class="overview-empty">No highlights found.</div>`;
                 return;
             }
 
-            const html = data
-                .map((chapter) => {
-                    const displayTitle = chapter.chapterNum
-                        ? `Ch. ${chapter.chapterNum}: ${chapter.title}`
-                        : chapter.title;
+            const icons = {
+                copy: `<svg class="icon-copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+                check: `<svg class="icon-check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+                del: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`,
+            };
 
-                    const storageKey = `${storagePrefix}${chapter.path}`;
+            const formatTitle = (source) => {
+                const titleText = source.title || source.chapterTitle || "";
+                if (source.chapterNum) {
+                    return titleText
+                        ? `Ch. ${source.chapterNum}: ${titleText}`
+                        : `Ch. ${source.chapterNum}`;
+                }
+                return titleText;
+            };
 
-                    const highlightsHtml = chapter.highlights
-                        .map(
-                            (hl) => `
+            container.innerHTML = data
+                .map((group) => {
+                    const groupTitle = formatTitle(group);
+                    const groupLinkHtml = !group.isFlatList
+                        ? `<a href="${group.path}" class="hl-chapter-link">Go to Chapter</a>`
+                        : "";
+
+                    const itemsHtml = group.highlights
+                        .map((hl) => {
+                            const linkUrl = group.isFlatList
+                                ? hl._chapterPath
+                                : group.path;
+                            const contextText = group.isFlatList
+                                ? formatTitle(hl)
+                                : null;
+
+                            const contextHtml = contextText
+                                ? `<div class="hl-context-label" style="font-size:0.75rem; opacity:0.6; margin-bottom:4px;">${contextText}</div>`
+                                : "";
+
+                            return `
                     <div class="hl-item">
+                        ${contextHtml}
                         <div class="hl-top-row">
-                            <a href="${chapter.path}#${hl.id}" class="hl-quote ${hl.color} hl-link">
-                                ${hl.text}
-                            </a>
-                            <button class="icon-btn copy-btn" title="Copy highlight">
-                                <svg class="icon-copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                <svg class="icon-check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            </button>
-                            <button class="icon-btn delete-btn" data-key="${storageKey}" data-id="${hl.id}" title="Delete highlight">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                            </button>
+                            <a href="${linkUrl}#${hl.id}" class="hl-quote ${hl.color} hl-link">${hl.text}</a>
+                            <div class="hl-actions">
+                                <button class="icon-btn copy-btn" title="Copy highlight">${icons.copy}${icons.check}</button>
+                                <button class="icon-btn delete-btn" data-key="${storagePrefix}${linkUrl}" data-id="${hl.id}" title="Delete highlight">${icons.del}</button>
+                            </div>
                         </div>
                         ${hl.note ? `<div class="hl-user-note">${hl.note}</div>` : ""}
-                    </div>
-                `,
-                        )
+                    </div>`;
+                        })
                         .join("");
 
                     return `
-                    <div class="hl-chapter-group">
-                        <div class="hl-chapter-title">
-                            <span>${displayTitle}</span>
-                            <a href="${chapter.path}" class="hl-chapter-link">Go to Chapter</a>
-                        </div>
-                        ${highlightsHtml}
+                <div class="hl-chapter-group">
+                    <div class="hl-chapter-title">
+                        <span>${groupTitle}</span>
+                        ${groupLinkHtml}
                     </div>
-                `;
+                    ${itemsHtml}
+                </div>`;
                 })
                 .join("");
-
-            container.innerHTML = html;
         },
     },
 
