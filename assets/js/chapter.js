@@ -28,19 +28,16 @@ const DOM = {
     nextLinks: document.querySelectorAll(".nav-next"),
     fabContainer: document.querySelector(".fab-container"),
     progressBar: document.getElementById("progress-bar"),
-    content: document.getElementById("content"),
 
     menu: document.getElementById("settingsMenu"),
     toggleBtn: document.getElementById("toggleSettings"),
     themeBtns: document.querySelectorAll(".theme-btn"),
-    pagedIndicator: document.querySelector(".paged-indicator"),
     inputs: {
         fontSize: document.getElementById("input-fontsize"),
         lineHeight: document.getElementById("input-lineheight"),
         fontFamily: document.getElementById("input-font"),
         spacing: document.getElementById("input-spacing"),
         paraStyle: document.getElementById("input-para-style"),
-        readMode: document.getElementById("input-read-mode"),
     },
     displays: {
         fontSize: document.getElementById("fs-val"),
@@ -286,7 +283,6 @@ const ThemeManager = {
             fontFamily: DOM.inputs.fontFamily.value,
             letterSpacing: DOM.inputs.spacing.value,
             paraStyle: DOM.inputs.paraStyle.value,
-            readMode: DOM.inputs.readMode.value,
         };
         localStorage.setItem(
             CONFIG.storageKeys.settings,
@@ -356,10 +352,6 @@ const ThemeManager = {
         if (s.paraStyle) {
             this.applyParaStyle(s.paraStyle);
             if (DOM.inputs.paraStyle) DOM.inputs.paraStyle.value = s.paraStyle;
-        }
-
-        if (s.readMode) {
-            PaginationManager.setMode(s.readMode);
         }
 
         this.applyTheme(s.theme || "light");
@@ -450,295 +442,8 @@ const HistoryManager = {
     },
 };
 
-const PaginationManager = {
-    init() {
-        this.pageIndicator = DOM.pagedIndicator;
-
-        this.isNavigating = false;
-        this.isAnimating = false;
-        this.scrollTimeout = null;
-
-        this.bindEvents();
-        this.setupResizeObserver();
-    },
-
-    bindEvents() {
-        DOM.inputs.readMode.addEventListener(
-            "change",
-            this.handleModeChange.bind(this),
-        );
-        DOM.content.addEventListener(
-            "click",
-            this.handleContentClick.bind(this),
-        );
-        document.addEventListener("keydown", this.handleKeydown.bind(this), {
-            capture: true,
-        });
-
-        document.addEventListener("click", this.handleAnchorClick.bind(this));
-
-        DOM.content.addEventListener(
-            "scroll",
-            this.handleUnmanagedScroll.bind(this),
-            { passive: true },
-        );
-    },
-
-    /**
-     *
-     * @param {string} e
-     * @returns {void}
-     */
-    handleModeChange(e) {
-        this.setMode(e.target.value);
-        ThemeManager.save();
-    },
-
-    /**
-     * Handles clicks within the reader content.
-     * @param {MouseEvent} e - The click event.
-     * @returns {void}
-     */
-    handleContentClick(e) {
-        if (!DOM.body.classList.contains("paged-mode")) return;
-
-        if (e.target.closest("a") || e.target.closest("button")) return;
-
-        const { clientX } = e;
-        const { innerWidth } = window;
-        const clickZone = innerWidth * 0.25;
-
-        if (clientX < clickZone) {
-            this.turnPage(-1);
-        } else if (clientX > innerWidth - clickZone) {
-            this.turnPage(1);
-        } else {
-            DOM.body.classList.toggle("reader-ui-hidden");
-        }
-    },
-
-    /**
-     * Intercepts anchor links to navigate cleanly within paged mode.
-     * @param {MouseEvent} e
-     * @returns {void}
-     */
-    handleAnchorClick(e) {
-        const anchor = e.target.closest('a[href^="#"]');
-        if (!anchor || !DOM.body.classList.contains("paged-mode")) return;
-
-        const targetId = anchor.getAttribute("href").substring(1);
-        const targetElement = document.getElementById(targetId);
-
-        if (targetElement) {
-            e.preventDefault();
-            this.goToElement(targetElement);
-        }
-    },
-
-    /**
-     * Handles arrow key navigation when in paged mode.
-     * @param {KeyboardEvent} e
-     * @returns {void}
-     */
-    handleKeydown(e) {
-        if (!DOM.body.classList.contains("paged-mode")) return;
-
-        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-
-            const isLeft = e.key === "ArrowLeft";
-            this.turnPage(isLeft ? -1 : 1);
-        }
-    },
-
-    /**
-     * Realigns the page if a native scroll happens outside of the pagination logic.
-     * @returns {void}
-     */
-    handleUnmanagedScroll() {
-        if (!DOM.body.classList.contains("paged-mode") || this.isAnimating)
-            return;
-
-        clearTimeout(this.scrollTimeout);
-
-        this.scrollTimeout = setTimeout(() => {
-            const { scrollStep } = this.getScrollMetrics();
-            const { scrollLeft } = DOM.content;
-
-            const nearestPageIndex = Math.round(scrollLeft / scrollStep);
-
-            this.isAnimating = true;
-            DOM.content.scrollTo({
-                left: nearestPageIndex * scrollStep,
-                behavior: "smooth",
-            });
-
-            this.updatePageIndicator(nearestPageIndex + 1);
-
-            DOM.content.addEventListener(
-                "scrollend",
-                () => {
-                    this.isAnimating = false;
-                },
-                { once: true },
-            );
-        }, 150);
-    },
-
-    /**
-     * Sets the reader display mode and resets interface state for paged viewing.
-     * @param {string} mode - The layout mode (e.g., "paged").
-     * @returns {void}
-     */
-    setMode(mode) {
-        const isPaged = mode === "paged";
-
-        DOM.body.classList.toggle("paged-mode", isPaged);
-        DOM.body.classList.toggle("reader-ui-hidden", isPaged);
-
-        if (isPaged) {
-            DOM.body.scrollTop = 0;
-            DOM.body.scrollLeft = 0;
-            this.updatePageIndicator(1);
-        }
-
-        DOM.inputs.readMode.value = mode;
-    },
-
-    turnPage(direction) {
-        if (this.isNavigating || this.isAnimating) return false;
-
-        const { scrollStep, exactWidth } = this.getScrollMetrics();
-        const { scrollLeft, scrollWidth } = DOM.content;
-        const maxScroll = scrollWidth - exactWidth;
-
-        const currentPageIndex = Math.round(scrollLeft / scrollStep);
-        const targetPageIndex = currentPageIndex + direction;
-
-        if (targetPageIndex < 0) {
-            if (NavigationManager.prevUrl) {
-                this.isNavigating = true;
-                window.location.href = NavigationManager.prevUrl;
-            }
-            return false;
-        }
-
-        if (targetPageIndex * scrollStep > maxScroll + 5) {
-            if (NavigationManager.nextUrl) {
-                this.isNavigating = true;
-                window.location.href = NavigationManager.nextUrl;
-            }
-            return false;
-        }
-
-        this.isAnimating = true;
-        DOM.body.classList.add("reader-ui-hidden");
-
-        DOM.content.scrollTo({
-            left: targetPageIndex * scrollStep,
-            behavior: "smooth",
-        });
-
-        this.updatePageIndicator(targetPageIndex + 1);
-
-        DOM.content.addEventListener(
-            "scrollend",
-            () => {
-                this.isAnimating = false;
-            },
-            { once: true },
-        );
-
-        return true;
-    },
-
-    /**
-     * Calculates the target page for an element and smoothly scrolls to it.
-     * @param {HTMLElement} element
-     * @returns {void}
-     */
-    goToElement(element) {
-        if (this.isNavigating || this.isAnimating) return;
-
-        const { scrollStep } = this.getScrollMetrics();
-        const containerRect = DOM.content.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-
-        const absoluteLeft =
-            elementRect.left - containerRect.left + DOM.content.scrollLeft;
-        const targetPageIndex = Math.floor(absoluteLeft / scrollStep);
-        const targetScrollLeft = targetPageIndex * scrollStep;
-
-        this.isAnimating = true;
-        DOM.content.scrollTo({
-            left: targetScrollLeft,
-            behavior: "smooth",
-        });
-
-        this.updatePageIndicator(targetPageIndex + 1);
-
-        DOM.content.addEventListener(
-            "scrollend",
-            () => {
-                this.isAnimating = false;
-            },
-            { once: true },
-        );
-    },
-
-    updatePageIndicator(predictivePage = null) {
-        const { scrollStep } = this.getScrollMetrics();
-        const { scrollLeft, scrollWidth } = DOM.content;
-
-        if (scrollStep <= 0) return;
-
-        const totalPages = Math.ceil(scrollWidth / scrollStep);
-
-        const currentPage =
-            predictivePage !== null
-                ? predictivePage
-                : Math.round(scrollLeft / scrollStep) + 1;
-
-        if (totalPages > 0) {
-            this.pageIndicator.textContent = `${currentPage} / ${totalPages}`;
-        }
-    },
-
-    getScrollMetrics() {
-        const exactWidth = DOM.content.getBoundingClientRect().width;
-        const style = window.getComputedStyle(DOM.content);
-
-        const paddingLeft = parseFloat(style.paddingLeft) || 0;
-        const paddingRight = parseFloat(style.paddingRight) || 0;
-        let gapValue =
-            style.columnGap !== "normal" ? style.columnGap : style.fontSize;
-        const gap = parseFloat(gapValue) || parseFloat(style.gap) || 0;
-
-        const contentWidth = exactWidth - paddingLeft - paddingRight;
-        const scrollStep = contentWidth + gap;
-
-        return { scrollStep, exactWidth };
-    },
-
-    /**
-     * Watches for dimension changes
-     * @returns {void}
-     */
-    setupResizeObserver() {
-        this.resizeObserver = new ResizeObserver(() => {
-            if (DOM.body.classList.contains("paged-mode")) {
-                this.updatePageIndicator(null);
-            }
-        });
-
-        this.resizeObserver.observe(DOM.content);
-    },
-};
-
 document.addEventListener("DOMContentLoaded", () => {
     NavigationManager.init();
-    PaginationManager.init();
     ThemeManager.init();
     ScrollManager.init();
     HistoryManager.init();

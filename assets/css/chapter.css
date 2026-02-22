@@ -3,10 +3,6 @@ html {
     scroll-behavior: smooth;
 }
 
-body.paged-mode {
-    overflow: hidden;
-}
-
 #content {
     max-width: 800px;
     font-family: var(--font-family);
@@ -18,17 +14,6 @@ body.paged-mode {
     content-visibility: auto;
     contain-intrinsic-size: 1000px;
     transition: all 0.05s ease-in-out;
-}
-
-body.paged-mode #content {
-    max-width: none;
-    width: 100vw;
-    height: calc(100vh - 160px);
-    padding-top: 40px;
-    padding-bottom: 80px;
-    box-sizing: border-box;
-    column-width: 100vw;
-    overflow: hidden;
 }
 
 #content p {
@@ -72,13 +57,6 @@ body.paged-mode #content {
     margin: 3em auto;
     width: 60%;
     opacity: 0.8;
-}
-
-body.paged-mode #content p,
-body.paged-mode #content img,
-body.paged-mode #content h2,
-body.paged-mode #content h3 {
-    break-inside: avoid;
 }
 
 .active-reading {
@@ -145,18 +123,6 @@ body.paged-mode #content h3 {
     transition:
         transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.3s ease;
-}
-
-body.reader-ui-hidden .sticky-bar {
-    transform: translateY(-100%);
-    opacity: 0;
-    pointer-events: none;
-}
-
-body.reader-ui-hidden .fab-container {
-    transform: translateY(150px) scale(0.9);
-    opacity: 0;
-    pointer-events: none;
 }
 
 .bottom-nav {
@@ -252,34 +218,6 @@ body.reader-ui-hidden .fab-container {
 
 [data-theme="sepia"] .discord-btn {
     filter: sepia(0.15);
-}
-
-body.paged-mode .bottom-nav,
-body.paged-mode .page-footer,
-body.paged-mode #progress-container,
-body.paged-mode div:has(> .discord-btn) {
-    display: none !important;
-}
-
-.paged-indicator {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: var(--text-color);
-    background-color: var(--bg-color);
-    font-family: var(--font-family);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 6px 16px;
-    border-radius: 20px;
-    opacity: 0.8;
-    box-shadow: 0 4px 12px var(--shadow-color);
-    z-index: 900;
-    pointer-events: none;
-    transition:
-        opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        transform 0.3s ease;
 }
 
 .audio-toolbar-wrapper {
@@ -431,6 +369,10 @@ body.paged-mode div:has(> .discord-btn) {
 .rustic-frame p {
     margin: 0 !important;
     padding: 0 !important;
+}
+
+#content pre {
+    text-wrap: wrap;
 }
 
 @keyframes fadeIn {
