@@ -320,6 +320,18 @@
 
                 <div class="setting-item">
                     <div class="setting-header">
+                        <label>Reading Mode</label>
+                    </div>
+                    <div class="select-wrapper">
+                        <select id="input-read-mode">
+                            <option value="scroll">Scroll</option>
+                            <option value="paged">Paged</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-header">
                         <label>Theme</label>
                     </div>
                     <div class="theme-selector">
@@ -607,6 +619,8 @@
                 <div class="overview-content" id="overviewContent"></div>
             </div>
         </div>
+
+        <div class="paged-indicator"></div>
 
         <script>
             const PREV_CHAPTER_NUM = "{{ .Params.prev }}";

@@ -74,10 +74,6 @@
     box-sizing: border-box;
 }
 
-@view-transition {
-    navigation: auto;
-}
-
 html {
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
