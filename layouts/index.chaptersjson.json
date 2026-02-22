@@ -1,15 +1,34 @@
 {{- $chapters := slice -}}
 {{- $pages := where .Site.RegularPages "Section" "chapters" -}}
 
-{{- $pages := sort $pages "Params.id" "asc" -}}
-
 {{- range $pages -}}
-  {{- $chapterData := dict
-    "id" (int .Params.id)
-    "title" .Title
-    "url" .RelPermalink
-  -}}
-  {{- $chapters = $chapters | append $chapterData -}}
+  {{- $id := 0 -}}
+  {{- $title := "" -}}
+
+  {{- /* 1. Search the raw markdown for the matching Chapter header */ -}}
+  {{- $matches := findRESubmatch `(?m)^#\s*Chapter\s+(\d+):\s*(.*)$` .RawContent 1 -}}
+
+  {{- /* 2. If a match is found, extract the capture groups */ -}}
+  {{- if $matches -}}
+    {{- $match := index $matches 0 -}}
+    {{- $id = int (index $match 1) -}} {{- /* The (\d+) group */ -}}
+    {{- $title = index $match 2 -}}   {{- /* The (.*) group */ -}}
+  {{- else -}}
+    {{- /* Fallback in case a file is missing the exact header format */ -}}
+    {{- $title = .Title -}}
+  {{- end -}}
+
+  {{- /* 3. Build the dictionary, but only if we found a valid ID */ -}}
+  {{- if gt $id 0 -}}
+    {{- $chapterData := dict
+      "id" $id
+      "title" $title
+      "url" .RelPermalink
+    -}}
+    {{- $chapters = $chapters | append $chapterData -}}
+  {{- end -}}
 {{- end -}}
 
+{{- /* 4. Sort the completed slice of dictionaries by ID, then jsonify */ -}}
+{{- $chapters = sort $chapters "id" "asc" -}}
 {{- $chapters | jsonify -}}

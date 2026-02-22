@@ -1,9 +1,27 @@
+{{- $currentId := 0 -}} {{- $currentTitle := .Title -}} {{- $matches :=
+findRESubmatch `(?m)^#\s*Chapter\s+(\d+):\s*(.*)$` .RawContent 1 -}} {{- if
+$matches -}} {{- $match := index $matches 0 -}} {{- $currentId = int (index
+$match 1) -}} {{- $currentTitle = index $match 2 -}} {{- end -}} {{- $chapters
+:= slice -}} {{- range where .Site.RegularPages "Section" "chapters" -}} {{-
+$cId := 0 -}} {{- $cMatches := findRESubmatch `(?m)^#\s*Chapter\s+(\d+)`
+.RawContent 1 -}} {{- if $cMatches -}} {{- $cId = int (index (index $cMatches 0)
+1) -}} {{- $chapters = $chapters | append (dict "id" $cId "url" .RelPermalink)
+-}} {{- end -}} {{- end -}} {{- $chapters = sort $chapters "id" "asc" -}} {{-
+$prevId := "" -}} {{- $nextId := "" -}} {{- $prevUrl := "" -}} {{- $nextUrl :=
+"" -}} {{- $currentIndex := -1 -}} {{- range $index, $element := $chapters -}}
+{{- if eq $element.id $currentId -}} {{- $currentIndex = $index -}} {{- end -}}
+{{- end -}} {{- if gt $currentIndex 0 -}} {{- $prevItem := index $chapters (sub
+$currentIndex 1) -}} {{- $prevId = $prevItem.id -}} {{- $prevUrl = $prevItem.url
+-}} {{- end -}} {{- if lt (add $currentIndex 1) (len $chapters) -}} {{-
+$nextItem := index $chapters (add $currentIndex 1) -}} {{- $nextId =
+$nextItem.id -}} {{- $nextUrl = $nextItem.url -}} {{- end -}}
+
 <!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{{ .Title }} | {{ .Site.Title }}</title>
+        <title>{{ $currentTitle }} | {{ .Site.Title }}</title>
         <meta name="theme-color" content="#333333" />
 
         <link
@@ -23,10 +41,7 @@
             sizes="180x180"
             href="{{ `icons/apple-touch-icon.png` | relURL }}"
         />
-        <meta
-            name="apple-mobile-web-app-title"
-            content="{{ .Params.short_name | default .Title }}"
-        />
+        <meta name="apple-mobile-web-app-title" content="{{ $currentTitle }}" />
         {{ with .OutputFormats.Get "WebAppManifest" }}
         <link rel="manifest" href="{{ .Permalink }}" />
         {{ end }} {{ partial "fonts.html" }} {{ $styles := resources.Get
@@ -63,13 +78,25 @@
 
         <div class="sticky-bar" id="topNav">
             <nav class="chapter-nav">
+                {{ if $prevUrl }}
+                <a class="nav-link nav-prev" href="{{ $prevUrl }}"
+                    >← Previous</a
+                >
+                {{ else }}
                 <a class="nav-link nav-prev disabled">← Previous</a>
+                {{ end }}
+
                 <a
                     class="nav-link nav-toc"
                     href="{{ `/myriadpaths/` | relURL }}"
                     >Index</a
                 >
+
+                {{ if $nextUrl }}
+                <a class="nav-link nav-next" href="{{ $nextUrl }}">Next →</a>
+                {{ else }}
                 <a class="nav-link nav-next disabled">Next →</a>
+                {{ end }}
             </nav>
         </div>
 
@@ -176,12 +203,8 @@
         </div>
 
         <nav class="chapter-nav bottom-nav">
-            {{ if .PrevInSection }}
-            <a
-                class="nav-link nav-prev"
-                href="{{ .PrevInSection.RelPermalink }}"
-                >← Previous</a
-            >
+            {{ if $prevUrl }}
+            <a class="nav-link nav-prev" href="{{ $prevUrl }}">← Previous</a>
             {{ else }}
             <a class="nav-link nav-prev disabled">← Previous</a>
             {{ end }}
@@ -190,12 +213,8 @@
                 >Index</a
             >
 
-            {{ if .NextInSection }}
-            <a
-                class="nav-link nav-next"
-                href="{{ .NextInSection.RelPermalink }}"
-                >Next →</a
-            >
+            {{ if $nextUrl }}
+            <a class="nav-link nav-next" href="{{ $nextUrl }}">Next →</a>
             {{ else }}
             <a class="nav-link nav-next disabled">Next →</a>
             {{ end }}
@@ -609,10 +628,10 @@
         </div>
 
         <script>
-            const PREV_CHAPTER_NUM = "{{ .Params.prev }}";
-            const NEXT_CHAPTER_NUM = "{{ .Params.next }}";
-            const CHAPTER_TITLE = `{{ .Title }}`;
-            const CHAPTER_NUM = {{ .Params.id | int }};
+            const PREV_CHAPTER_NUM = "{{ $prevId }}";
+            const NEXT_CHAPTER_NUM = "{{ $nextId }}";
+            const CHAPTER_TITLE = `{{ $currentTitle }}`;
+            const CHAPTER_NUM = {{ $currentId }};
         </script>
 
         {{ $floatingCore := resources.Get "js/vendor/floating-ui/core.js" |
