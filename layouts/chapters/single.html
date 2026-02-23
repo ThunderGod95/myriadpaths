@@ -267,21 +267,6 @@ $nextItem.id -}} {{- $nextUrl = $nextItem.url -}} {{- end -}}
                         value="0"
                     />
                 </div>
-
-                <div class="setting-item">
-                    <div class="setting-header">
-                        <label>Paragraph Style</label>
-                    </div>
-                    <div class="select-wrapper">
-                        <select id="input-para-style">
-                            <option value="block">Block (Web Default)</option>
-                            <option value="indent">
-                                Indented (Classic Book)
-                            </option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="setting-item">
                     <div class="setting-header">
                         <label for="input-font">Typeface</label>
@@ -336,7 +321,37 @@ $nextItem.id -}} {{- $nextUrl = $nextItem.url -}} {{- end -}}
                         </select>
                     </div>
                 </div>
-
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <div class="setting-header">
+                            <label>Paragraph Style</label>
+                        </div>
+                        <div class="segmented-control" id="para-style-btns">
+                            <button
+                                class="segment-btn active"
+                                data-style="block"
+                                aria-label="Block Style"
+                            >
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"
+                                    />
+                                </svg>
+                            </button>
+                            <button
+                                class="segment-btn"
+                                data-style="indent"
+                                aria-label="Indented Style"
+                            >
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M10 6h10v2H10zm-6 5h16v2H4zm0 5h16v2H4z"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <div class="setting-item">
                     <div class="setting-header">
                         <label>Theme</label>

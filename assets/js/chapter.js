@@ -21,6 +21,7 @@ const CONFIG = {
 const DOM = {
     root: document.documentElement,
     body: document.body,
+    content: document.getElementById("content"),
 
     navBar: document.getElementById("topNav"),
     sentinel: document.getElementById("sentinel"),
@@ -32,6 +33,7 @@ const DOM = {
     menu: document.getElementById("settingsMenu"),
     toggleBtn: document.getElementById("toggleSettings"),
     themeBtns: document.querySelectorAll(".theme-btn"),
+    paraStyleBtns: document.querySelectorAll("#para-style-btns > button"),
     inputs: {
         fontSize: document.getElementById("input-fontsize"),
         lineHeight: document.getElementById("input-lineheight"),
@@ -197,7 +199,14 @@ const ThemeManager = {
 
         DOM.themeBtns.forEach((btn) => {
             btn.addEventListener("click", (e) => {
-                this.applyTheme(e.target.dataset.theme);
+                this.applyTheme(btn.dataset.theme);
+                this.save();
+            });
+        });
+
+        DOM.paraStyleBtns.forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                this.applyParaStyle(btn.dataset.style);
                 this.save();
             });
         });
@@ -222,11 +231,6 @@ const ThemeManager = {
 
         DOM.inputs.fontFamily.addEventListener("change", (e) => {
             this.updateCSS("--font-family", e.target.value);
-            this.save();
-        });
-
-        DOM.inputs.paraStyle.addEventListener("change", (e) => {
-            this.applyParaStyle(e.target.value);
             this.save();
         });
 
@@ -260,6 +264,10 @@ const ThemeManager = {
         } else {
             this.updateCSS("--para-indent", "0");
         }
+
+        DOM.paraStyleBtns.forEach((btn) =>
+            btn.classList.toggle("active", btn.dataset.style === style),
+        );
     },
 
     changeFontSize(delta) {
@@ -275,14 +283,20 @@ const ThemeManager = {
     },
 
     save() {
-        const activeBtn = document.querySelector(".theme-btn.active");
+        const activeThemeBtn = document.querySelector(".theme-btn.active");
+        const activeParaStyleBtn = document.querySelector(
+            "#para-style-btns > button.active",
+        );
+
         const settings = {
             fontSize: DOM.inputs.fontSize.value,
             lineHeight: DOM.inputs.lineHeight.value,
-            theme: activeBtn ? activeBtn.dataset.theme : "light",
+            theme: activeThemeBtn ? activeThemeBtn.dataset.theme : "light",
             fontFamily: DOM.inputs.fontFamily.value,
             letterSpacing: DOM.inputs.spacing.value,
-            paraStyle: DOM.inputs.paraStyle.value,
+            paraStyle: activeParaStyleBtn
+                ? activeParaStyleBtn.dataset.style
+                : "block",
         };
         localStorage.setItem(
             CONFIG.storageKeys.settings,
@@ -351,7 +365,6 @@ const ThemeManager = {
 
         if (s.paraStyle) {
             this.applyParaStyle(s.paraStyle);
-            if (DOM.inputs.paraStyle) DOM.inputs.paraStyle.value = s.paraStyle;
         }
 
         this.applyTheme(s.theme || "light");
@@ -442,9 +455,114 @@ const HistoryManager = {
     },
 };
 
+const ReadingTimeManager = {
+    storageKey: CONFIG.storageKeys.settings
+        ? "reader-personal-wpm"
+        : "reader-wpm",
+    defaultWPM: 250,
+    wordCount: 0,
+    startTime: 0,
+    activeTimeMs: 0,
+    hasFinished: false,
+
+    init() {
+        this.calculateWordCount();
+        this.renderEstimator();
+        this.startTracking();
+        this.bindEvents();
+    },
+
+    calculateWordCount() {
+        const text = DOM.content.innerText || DOM.content.textContent;
+        this.wordCount = text.trim().split(/\s+/).length;
+    },
+
+    getPersonalWPM() {
+        const saved = localStorage.getItem(this.storageKey);
+        return saved ? parseInt(saved, 10) : this.defaultWPM;
+    },
+
+    savePersonalWPM(newWPM) {
+        const currentWPM = this.getPersonalWPM();
+        const blendedWPM = Math.round(currentWPM * 0.7 + newWPM * 0.3);
+        localStorage.setItem(this.storageKey, blendedWPM);
+    },
+
+    renderEstimator() {
+        const wpm = this.getPersonalWPM();
+        const minutes = Math.ceil(this.wordCount / wpm);
+
+        const container = document.createElement("div");
+        container.className = "reading-time-container";
+        container.innerHTML = `
+                <svg class="reading-time-icon" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>${minutes} min read</span>
+            `;
+
+        const h1 = DOM.content.querySelector("h1");
+        if (h1) {
+            h1.insertAdjacentElement("afterend", container);
+        } else {
+            DOM.content.prepend(container);
+        }
+    },
+
+    startTracking() {
+        this.startTime = Date.now();
+    },
+
+    updateActiveTime() {
+        if (!this.startTime) return;
+        this.activeTimeMs += Date.now() - this.startTime;
+        this.startTime = Date.now();
+    },
+
+    bindEvents() {
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                this.updateActiveTime();
+                this.startTime = null;
+            } else {
+                this.startTime = Date.now();
+            }
+        });
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !this.hasFinished) {
+                    this.finishReading();
+                }
+            },
+            { threshold: 0.1 },
+        );
+
+        const bottomNav = document.querySelector(".bottom-nav");
+        if (bottomNav) observer.observe(bottomNav);
+    },
+
+    finishReading() {
+        this.hasFinished = true;
+        this.updateActiveTime();
+
+        const minutesSpent = this.activeTimeMs / 60000;
+
+        if (minutesSpent > 0.5) {
+            let actualWPM = Math.round(this.wordCount / minutesSpent);
+
+            if (actualWPM >= 130 && actualWPM <= 600) {
+                this.savePersonalWPM(actualWPM);
+            }
+        }
+    },
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     NavigationManager.init();
     ThemeManager.init();
     ScrollManager.init();
     HistoryManager.init();
+    ReadingTimeManager.init();
 });
