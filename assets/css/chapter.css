@@ -11,9 +11,7 @@ html {
     letter-spacing: var(--letter-spacing);
     margin: 0 auto;
     padding: 0 20px 40px;
-    transition:
-        all 0.05s ease-in-out,
-        transform 0.2s ease-in;
+    transition: all 0.05s ease-in-out;
 }
 
 #content p {
