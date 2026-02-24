@@ -64,6 +64,18 @@ minify | fingerprint -}}
     </head>
 
     <body>
+        <button
+            class="settings-btn top-fab"
+            id="discoverFab"
+            aria-label="Discover more novels."
+        >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                />
+            </svg>
+        </button>
+
         <header class="book-header">
             <h1 class="book-title">{{ .Title }}</h1>
             <div class="book-meta">By {{ .Params.author }}</div>
@@ -337,6 +349,100 @@ minify | fingerprint -}}
             </div>
         </div>
 
+        <div id="discoverModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Discover More</h2>
+                    <button
+                        id="closeModalBtn"
+                        class="close-modal"
+                        aria-label="Close"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="carousel-container">
+                    <button
+                        class="nav-arrow prev-arrow"
+                        id="prevBtn"
+                        aria-label="Previous Novel"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            width="32"
+                            height="32"
+                        >
+                            <path
+                                d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                            />
+                        </svg>
+                    </button>
+
+                    <div class="carousel-viewport" id="carouselViewport">
+                        <a
+                            href="https://thundergod95.github.io/nmtci/"
+                            class="novel-card"
+                        >
+                            <div class="card-cover">
+                                {{ with .Params.images }}
+                                <img
+                                    src="{{ index . 1 | relURL }}"
+                                    alt="Book Cover"
+                                />
+                                {{ end }}
+                            </div>
+                            <div class="card-title">
+                                No Money to Cultivate Immortality
+                            </div>
+                        </a>
+
+                        <a
+                            href="https://thundergod95.github.io/uth/"
+                            class="novel-card"
+                        >
+                            <div class="card-cover">
+                                {{ with .Params.images }}
+                                <img
+                                    src="{{ index . 2 | relURL }}"
+                                    alt="Book Cover"
+                                />
+                                {{ end }}
+                            </div>
+                            <div class="card-title">Under the Heavens</div>
+                        </a>
+                    </div>
+
+                    <button
+                        class="nav-arrow next-arrow"
+                        id="nextBtn"
+                        aria-label="Next Novel"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            width="32"
+                            height="32"
+                        >
+                            <path
+                                d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script src="{{ $js.RelPermalink }}"></script>
 
         <script>
@@ -356,6 +462,85 @@ minify | fingerprint -}}
             }
 
             registerServiceWorker();
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const discoverFab = document.getElementById("discoverFab");
+                const discoverModal = document.getElementById("discoverModal");
+                const closeModalBtn = document.getElementById("closeModalBtn");
+                const fabContainer = document.querySelector(".fab-container");
+
+                const viewport = document.getElementById("carouselViewport");
+                const prevBtn = document.getElementById("prevBtn");
+                const nextBtn = document.getElementById("nextBtn");
+
+                const getScrollbarWidth = () =>
+                    window.innerWidth - document.documentElement.clientWidth;
+
+                function openModal() {
+                    const scrollbarWidth = getScrollbarWidth();
+
+                    document.body.style.overflow = "hidden";
+                    document.body.style.paddingRight = `${scrollbarWidth}px`;
+
+                    if (fabContainer) {
+                        fabContainer.style.right = `calc(30px + ${scrollbarWidth}px)`;
+                    }
+
+                    discoverModal.classList.add("active");
+                }
+
+                function closeModal() {
+                    discoverModal.classList.remove("active");
+
+                    setTimeout(() => {
+                        document.body.style.overflow = "";
+                        document.body.style.paddingRight = "";
+
+                        if (fabContainer) {
+                            fabContainer.style.right = "";
+                        }
+                    }, 300);
+                }
+
+                discoverFab.addEventListener("click", openModal);
+                closeModalBtn.addEventListener("click", closeModal);
+
+                discoverModal.addEventListener("click", (e) => {
+                    if (e.target === discoverModal) closeModal();
+                });
+
+                document.addEventListener("keydown", (e) => {
+                    if (!discoverModal.classList.contains("active")) return;
+
+                    if (e.key === "Escape") closeModal();
+
+                    if (e.key === "ArrowRight")
+                        viewport.scrollBy({
+                            left: viewport.clientWidth,
+                            behavior: "smooth",
+                        });
+                    if (e.key === "ArrowLeft")
+                        viewport.scrollBy({
+                            left: -viewport.clientWidth,
+                            behavior: "smooth",
+                        });
+                });
+
+                nextBtn.addEventListener("click", () => {
+                    viewport.scrollBy({
+                        left: viewport.clientWidth,
+                        behavior: "smooth",
+                    });
+                });
+
+                prevBtn.addEventListener("click", () => {
+                    viewport.scrollBy({
+                        left: -viewport.clientWidth,
+                        behavior: "smooth",
+                    });
+                });
+            });
         </script>
     </body>
 </html>

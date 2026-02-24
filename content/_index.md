@@ -5,7 +5,7 @@ description: "Dive into 'Myriad Paths'. From a lonely earthen mound to the vast 
 keywords: ["Myriad Paths", "Myriad Daos", "Wan Dao Chang Tu", "Da Nao Bei Tao Kong", "Fantasy Novel", "Cultivation", "Martial Arts", "Xianxia", "Li Qi", "Dao", "Strategy", "Demons", "Tang Empire", "Complete Novel", "Webnovel"]
 author: "Hollowed Out Brain (大脑被掏空)"
 translator: "ThunderGod95"
-images: ["img/cover.webp"]
+images: ["img/cover.webp", "img/cover_nmtci.webp", "img/cover_uth.webp"]
 links:
   - name: "Discord"
     url: "https://discord.gg/EmEJmvwYUS"
