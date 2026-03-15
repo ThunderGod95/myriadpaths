@@ -14,6 +14,7 @@ minify | fingerprint -}}
         <meta name="author" content="{{ .Params.translator | default `` }}" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="{{ .Permalink }}" />
+        <link rel="alternate" type="application/rss+xml" title="Chapters RSS Feed" href="{{ "index.xml" | absURL }}" />
         <meta name="theme-color" content="#333333" />
 
         <link
