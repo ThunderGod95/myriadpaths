@@ -1,3 +1,5 @@
+const SITE_BASE_URL = `{{ "" | relURL }}`;
+
 const CONFIG = {
     storageKeys: {
         settings: "reader-settings",
@@ -63,10 +65,10 @@ const DOM = {
 
 const NavigationManager = {
     prevUrl: PREV_CHAPTER_NUM
-        ? `/myriadpaths/chapters/${PREV_CHAPTER_NUM}/`
+        ? `${SITE_BASE_URL}chapters/${PREV_CHAPTER_NUM}/`
         : "",
     nextUrl: NEXT_CHAPTER_NUM
-        ? `/myriadpaths/chapters/${NEXT_CHAPTER_NUM}/`
+        ? `${SITE_BASE_URL}chapters/${NEXT_CHAPTER_NUM}/`
         : "",
 
     init() {
@@ -451,7 +453,9 @@ const HistoryManager = {
             timestamp: Date.now(),
         };
 
-        localStorage.setItem("myriad-paths-last-read", JSON.stringify(history));
+        const storageKey =
+            "{{ .Site.Home.Params.short_name | urlize }}-last-read";
+        localStorage.setItem(storageKey, JSON.stringify(history));
     },
 };
 

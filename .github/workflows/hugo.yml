@@ -3,7 +3,6 @@ name: Build and Deploy
 on:
     push:
         branches: ["main"]
-
     workflow_dispatch:
 
 permissions:
@@ -29,15 +28,39 @@ jobs:
               run: |
                   wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb \
                   && sudo dpkg -i ${{ runner.temp }}/hugo.deb
+
             - name: Checkout
               uses: actions/checkout@v4
               with:
                   submodules: recursive
+
             - name: Setup Pages
               id: pages
               uses: actions/configure-pages@v5
-            - name: Install Node.js dependencies
-              run: "[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true"
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
+
+            - name: Restore chapters.json state
+              uses: actions/cache/restore@v4
+              with:
+                  path: static/chapters.json
+                  key: chapters-json-${{ github.run_id }}
+                  restore-keys: |
+                      chapters-json-
+
+            - name: Generate Metadata
+              run: bun run scripts/generate-metadata.ts
+
+            - name: Save chapters.json state
+              uses: actions/cache/save@v4
+              if: always()
+              with:
+                  path: static/chapters.json
+                  key: chapters-json-${{ github.run_id }}
+
             - name: Build with Hugo
               env:
                   HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
@@ -46,6 +69,7 @@ jobs:
                   hugo \
                     --minify \
                     --baseURL "${{ steps.pages.outputs.base_url }}/"
+
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:

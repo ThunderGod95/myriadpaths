@@ -660,8 +660,9 @@ $nextItem.id -}} {{- $nextUrl = $nextItem.url -}} {{- end -}}
         {{- $chapterJs := resources.Get "js/chapter.js" |
         resources.ExecuteAsTemplate "js/chapter.js" . | minify | fingerprint -}}
         <script src="{{ $chapterJs.RelPermalink }}"></script>
-        {{ $highlightJs := resources.Get "js/highlight.js" | minify |
-        fingerprint }}
+        {{ $highlightJs := resources.Get "js/highlight.js" |
+        resources.ExecuteAsTemplate "js/highlight.js" . | minify | fingerprint
+        }}
         <script src="{{ $highlightJs.RelPermalink }}"></script>
 
         {{ $audioJs := resources.Get "js/audio.js" | minify | fingerprint }}

@@ -27,11 +27,6 @@ outputFormats:
         baseName: site
         isPlainText: true
         notAlternative: true
-    ChaptersJSON:
-        mediaType: application/json
-        baseName: chapters
-        isPlainText: true
-        notAlternative: true
 
 outputs:
     home:
@@ -40,7 +35,6 @@ outputs:
         - ServiceWorker
         - Offline
         - WebAppManifest
-        - ChaptersJSON
 
 markup:
     goldmark:

@@ -10,7 +10,8 @@ const HighlightManager = {
 
     config: {
         allowedColors: new Set(["yellow", "green", "blue", "red"]),
-        storagePrefix: "myriad-paths-highlights-",
+        storagePrefix:
+            "{{ .Site.Home.Params.short_name | urlize }}-highlights-",
         selectors: {
             content:
                 (typeof CONFIG !== "undefined" &&
