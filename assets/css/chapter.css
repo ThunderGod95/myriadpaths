@@ -57,6 +57,11 @@ html {
     opacity: 0.8;
 }
 
+#content .footnotes ol ul,
+#content .footnotes ol ol {
+    margin-bottom: 18px;
+}
+
 .active-reading {
     background-color: var(--hover-bg);
     border-left: 4px solid var(--accent-color);
